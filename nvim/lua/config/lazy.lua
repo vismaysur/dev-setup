@@ -88,12 +88,17 @@ require("lazy").setup({
             })
 
             vim.filetype.add({
+                pattern = {
+                    [".*%.cpp%.inc"]    = "cpp",
+                    [".*%.h%.inc"]      = "cpp",
+                },
+
                 filename = {
-                  ["BUILD"]           = "bzl",
-                  ["BUILD.bazel"]     = "bzl",
-                  ["WORKSPACE"]       = "bzl",
-                  ["WORKSPACE.bazel"] = "bzl",
-                  ["MODULE.bazel"]    = "bzl",
+                    ["BUILD"]           = "bzl",
+                    ["BUILD.bazel"]     = "bzl",
+                    ["WORKSPACE"]       = "bzl",
+                    ["WORKSPACE.bazel"] = "bzl",
+                    ["MODULE.bazel"]    = "bzl",
                 },
                 extension = { bzl = "bzl" },
             })
@@ -141,12 +146,36 @@ require("lazy").setup({
             { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
         },
         config = function() 
-            vim.keymap.set("n", "<space>fd", require('telescope.builtin').find_files)
-            vim.keymap.set("n", "<space>en", function()
-                require('telescope.builtin').find_files {
-                    cwd = vim.fn.stdpath("config")
-                }
+            vim.keymap.set("n", "<space>fd", function() 
+                require('telescope.builtin').find_files( 
+                    require('telescope.themes').get_ivy({})
+                )
             end)
+
+            vim.keymap.set("n", "<space>en", function()
+                require('telescope.builtin').find_files(
+                    require('telescope.themes').get_ivy({
+                        cwd = vim.fn.stdpath("config")
+                    })
+                )
+            end)
+        end,
+    },
+
+    -- conform.nvim: formatter
+    {
+        "stevearc/conform.nvim",
+        config = function()
+            require("conform").setup({
+                formatters_by_ft = {
+                    c = { "clang_format" },
+                    cpp = { "clang_format" },
+                },
+                format_on_save = {
+                    timeout_ms = 500,
+                    lsp_fallback = true,
+                },
+            })
         end,
     }
 })
