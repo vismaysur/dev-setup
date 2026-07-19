@@ -1,8 +1,8 @@
 local set = vim.opt
 
-set.tabstop = 4         -- Visual width of a tab
-set.softtabstop = 4     -- Number of spaces inserted when hitting a tab
-set.shiftwidth = 4      -- Number of spaces inserted for indentation
+set.tabstop = 2         -- Visual width of a tab
+set.softtabstop = 2     -- Number of spaces inserted when hitting a tab
+set.shiftwidth = 2      -- Number of spaces inserted for indentation
 set.expandtab = true    -- Converts tabs to spaces
 
 set.number = true
@@ -28,6 +28,7 @@ vim.lsp.enable({
     "tblgen_lsp_server",
     "mlir_pdll_lsp_server",
     "clangd",
+    "pyright",
 })
 
 -- diagnostic UI

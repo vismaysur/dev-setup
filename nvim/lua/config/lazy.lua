@@ -49,7 +49,7 @@ require("lazy").setup({
         lazy = false,
         build = ':TSUpdate',
         config = function()
-            local languages = { "lua", "markdown", "markdown_inline", "starlark", "c", "cpp" }
+            local languages = { "lua", "markdown", "markdown_inline", "starlark", "c", "cpp", "python" }
 
             require("nvim-treesitter.configs").setup({
                 ensure_installed = languages,
@@ -88,19 +88,32 @@ require("lazy").setup({
             })
 
             vim.filetype.add({
-                pattern = {
-                    [".*%.cpp%.inc"]    = "cpp",
-                    [".*%.h%.inc"]      = "cpp",
-                },
-
                 filename = {
-                    ["BUILD"]           = "bzl",
-                    ["BUILD.bazel"]     = "bzl",
-                    ["WORKSPACE"]       = "bzl",
-                    ["WORKSPACE.bazel"] = "bzl",
-                    ["MODULE.bazel"]    = "bzl",
+                  ["BUILD"]           = "bzl",
+                  ["BUILD.bazel"]     = "bzl",
+                  ["WORKSPACE"]       = "bzl",
+                  ["WORKSPACE.bazel"] = "bzl",
+                  ["MODULE.bazel"]    = "bzl",
                 },
                 extension = { bzl = "bzl" },
+            })
+
+            vim.api.nvim_create_autocmd('LspAttach', {
+              callback = function(args)
+                local opts = { buffer = args.buf, silent = true }
+
+                vim.keymap.set('n', 'gd', function() 
+                  vim.lsp.buf.definition()
+                end, opts)
+
+                vim.keymap.set('i', '<C-y>', function() 
+                  vim.lsp.buf.signature_help({ border = 'rounded', max_width = 80 })
+                end, opts)
+
+                vim.keymap.set('n', 'K', function() 
+                  vim.lsp.buf.hover({ border = 'rounded', max_width = 80 })
+                end, opts)
+              end,
             })
         end,
         opts = {
@@ -117,21 +130,15 @@ require("lazy").setup({
         'saghen/blink.cmp',
         dependencies = { 'rafamadriz/friendly-snippets' },
         version = '1.*',
-        ---@module 'blink.cmp'
-        ---@type blink.cmp.Config
         opts = {
           keymap = { preset = 'default' },
-
           appearance = {
             nerd_font_variant = 'mono'
           },
-
           completion = { documentation = { auto_show = false } },
-
           sources = {
             default = { 'lsp', 'path', 'snippets', 'buffer' },
           },
-
           fuzzy = { implementation = "prefer_rust_with_warning" }
         },
         opts_extend = { "sources.default" }
@@ -142,23 +149,30 @@ require("lazy").setup({
         'nvim-telescope/telescope.nvim', version = '*',
         dependencies = {
             'nvim-lua/plenary.nvim',
-            -- optional but recommended
             { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
         },
         config = function() 
+            local builtin = require('telescope.builtin')
+
             vim.keymap.set("n", "<space>fd", function() 
-                require('telescope.builtin').find_files( 
+                builtin.find_files( 
                     require('telescope.themes').get_ivy({})
                 )
             end)
 
             vim.keymap.set("n", "<space>en", function()
-                require('telescope.builtin').find_files(
+                builtin.find_files(
                     require('telescope.themes').get_ivy({
                         cwd = vim.fn.stdpath("config")
                     })
                 )
             end)
+
+            vim.keymap.set("n", "<space>fg", function()
+                builtin.live_grep(
+                    require('telescope.themes').get_ivy({})
+                )
+           end)
         end,
     },
 
@@ -170,9 +184,10 @@ require("lazy").setup({
                 formatters_by_ft = {
                     c = { "clang_format" },
                     cpp = { "clang_format" },
+                    tablegen = { "clang_format" },
                 },
                 format_on_save = {
-                    timeout_ms = 500,
+                    timeout_ms = 1000,
                     lsp_fallback = true,
                 },
             })
